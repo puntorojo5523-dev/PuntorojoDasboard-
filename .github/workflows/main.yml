@@ -1,0 +1,48 @@
+
+name: PUNTOROJO DASHBOARD - Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Construir APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependencias
+        working-directory: mobile
+        run: npm install
+
+      - name: Preparar Android
+        working-directory: mobile
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Construir APK
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PUNTOROJO-DASHBOARD-APK
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
